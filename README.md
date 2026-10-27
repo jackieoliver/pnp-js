@@ -44,6 +44,24 @@ matrices are plain nested arrays.
 
 ## Algorithm
 
+```mermaid
+flowchart LR
+    A["6+ 2D-3D pairs + intrinsics"] --> B["Hartley normalisation"]
+    B --> C{"Normal equations singular?"}
+    C -->|No| D["11-unknown DLT solve"]
+    C -->|Yes| E["Smallest eigenvector of AᵀA"]
+    D --> F["Pose from K⁻¹P"]
+    E --> F
+    F --> G{"Refine?"}
+    G -->|Yes| H["Levenberg-Marquardt refinement"]
+    G -->|No| I["Cheirality check"]
+    H --> I
+    I --> J["R, t, RMS error"]
+```
+
+A linear DLT solve gives a closed-form starting pose, and Levenberg-Marquardt
+then minimises pixel reprojection error from there. The steps in detail:
+
 1. **Normalisation.** 2D points are translated to their centroid and scaled to
    mean distance sqrt(2); 3D points likewise to sqrt(3) (Hartley normalisation),
    so the linear system below is well conditioned regardless of units.
